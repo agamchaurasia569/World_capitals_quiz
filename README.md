@@ -30,7 +30,6 @@ This project demonstrates how to build a scalable backend using:
 | **Express.js** | Lightweight backend framework         |
 | **PostgreSQL** | Powerful open-source SQL database     |
 | **pg**         | PostgreSQL client for Node.js         |
-| **dotenv**     | Loads environment variables securely  |
 
 ---
 
