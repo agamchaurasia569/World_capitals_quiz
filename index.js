@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
+import fs from "fs";
 
 const db = new pg.Client({
   user: "postgres",
@@ -12,16 +13,41 @@ const db = new pg.Client({
 const app = express();
 const port = 3000;
 
-db.connect();
-
 let quiz = [];
-db.query("SELECT * FROM capitals", (err, res) => {
+
+// Function to load CSV data as fallback
+function loadCSVData() {
+  const csv = fs.readFileSync("./capitals.csv", "utf-8");
+  const lines = csv.split("\n");
+  lines.forEach((line, index) => {
+    if (index > 0 && line.trim()) {
+      const [id, country, capital] = line.split(",");
+      if (capital) {
+        quiz.push({ country, capital });
+      }
+    }
+  });
+  console.log("Loaded " + quiz.length + " questions from CSV file");
+}
+
+// Connect to database
+db.connect((err) => {
   if (err) {
-    console.error("Error executing query", err.stack);
+    console.error("Database connection failed:", err.message);
+    console.log("Loading data from CSV file instead...");
+    loadCSVData();
   } else {
-    quiz = res.rows;
+    console.log("Connected to database");
+    db.query("SELECT * FROM capitals", (err, res) => {
+      if (err) {
+        console.error("Error executing query", err.stack);
+        loadCSVData();
+      } else {
+        quiz = res.rows;
+        console.log("Loaded " + quiz.length + " questions from database");
+      }
+    });
   }
-  db.end();
 }); 
 
 
